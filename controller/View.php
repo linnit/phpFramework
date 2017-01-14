@@ -40,7 +40,7 @@ class View extends Controller {
 		} else {
 			echo $this->twig->render("login.html", array(
 				'siteName' => $this->model->siteName,
-				'page' => $page,
+				'page' => 'login',
 				'alerts' => $this->model->endAlerts,
 				'stuff' => $stuff,
 				'userlevel' => $userLevel

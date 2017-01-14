@@ -10,7 +10,8 @@ Class Model {
 		$dotenv = new Dotenv\Dotenv(dirname(dirname(__DIR__)));
 		$dotenv->load();
 
-		$this->siteURL = getenv('SITEURL');
+		$this->siteURL = $this->getSiteUrl();
+		$this->siteDomain = $this->getDomain();
 		$this->siteName = getenv('SITENAME');
 
 		$dbhost = getenv('DB_HOST');
@@ -54,5 +55,13 @@ Class Model {
 
 		if (!isset($_SESSION['alerts'])) $_SESSION['alerts'] = array();
 		array_push($_SESSION['alerts'], array($type, $alert));
+	}
+
+	function getSiteUrl() {
+		return preg_replace('/\/$/', '', getenv('SITEURL'));
+	}
+
+	function getDomain() {
+		return str_replace(array('http://', 'https://'), '', $this->siteURL);
 	}
 }

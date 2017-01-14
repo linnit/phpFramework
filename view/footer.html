@@ -36,7 +36,7 @@ $('#paymentButton').on('click', function (e) {
 	var amount = f * 100;
 	if (amount > 0) {
 		handler.open({
-			name: 'TinyBox',
+			name: '{{ siteName }}',
 			description: 'KVM VPS',
 			zipCode: false,
 			currency: 'gbp',
@@ -50,7 +50,7 @@ $('#paymentButton').on('click', function (e) {
 
 $(window).on('popstate', function () { handler.close();});
 </script>
-	
+
 
 <script>
 
@@ -92,5 +92,3 @@ function calcFinalPrice() {
 
 </body>
 </html>
-
-
