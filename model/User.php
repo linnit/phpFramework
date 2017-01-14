@@ -149,12 +149,12 @@ class User extends Model {
 	 * @return [type]           [description]
 	 */
 	public function email_new_user($email, $password) {
-		$mail->setFrom('noreply@<domain.tld>', '<site name>');
+		$mail->setFrom('noreply@<domain.tld>', $this->model->siteName);
 		$mail->addAddress($email);
 
 		$mail->isHTML(true);
 
-		$mail->Subject = '<site name> Registration';
+		$mail->Subject = $this->model->siteName . ' Registration';
 		$mail->Body    = 'This is the HTML message body <b>in bold!</b><br>Password: ' .$password;
 		$mail->AltBody = 'This is the body in plain text for non-HTML mail clients\n Password:' .$password;
 

@@ -10,6 +10,9 @@ Class Model {
 		$dotenv = new Dotenv\Dotenv(dirname(dirname(__DIR__)));
 		$dotenv->load();
 
+		$this->siteURL = getenv('SITEURL');
+		$this->siteName = getenv('SITENAME');
+
 		$dbhost = getenv('DB_HOST');
 		$dbname = getenv('DB_NAME');
 		$dbuser = getenv('DB_USER');

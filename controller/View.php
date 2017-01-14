@@ -31,6 +31,7 @@ class View extends Controller {
 
 		if ($userLevel <= $pagePerm) {
 			echo $this->twig->render("$page.html", array(
+				'siteName' => $this->model->siteName,
 				'page' => $page,
 				'alerts' => $this->model->endAlerts,
 				'stuff' => $stuff,
@@ -38,6 +39,7 @@ class View extends Controller {
 			));
 		} else {
 			echo $this->twig->render("login.html", array(
+				'siteName' => $this->model->siteName,
 				'page' => $page,
 				'alerts' => $this->model->endAlerts,
 				'stuff' => $stuff,
