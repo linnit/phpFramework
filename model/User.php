@@ -31,6 +31,7 @@ class User extends Model {
 
 		if (!$user) {
 			$this->parent->setAlert("danger", "Incorrect Login (Bad e-mail)");
+			$badLogin ="insert into login_attempts values('127.0.0.1', 4, NULL);";
 			return false;
 		}
 
@@ -149,7 +150,7 @@ class User extends Model {
 	 * @return [type]           [description]
 	 */
 	public function email_new_user($email, $password) {
-		$mail->setFrom('noreply@<domain.tld>', $this->model->siteName);
+		$mail->setFrom("noreply{$this->model->siteDomain}", $this->model->siteName);
 		$mail->addAddress($email);
 
 		$mail->isHTML(true);
