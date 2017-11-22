@@ -19,12 +19,12 @@ class User extends Model {
 	 * @return boolean
 	 */
 	public function login() {
-		$usbcid = $_POST["usbcid"];
+		$login = $_POST["login"];
 		$password = $_POST["password"];
 
-		$stmt = $this->db->prepare("SELECT id, password FROM user WHERE usbcid = :usbcid");
+		$stmt = $this->db->prepare("SELECT id, password FROM user WHERE login = :login");
 
-		$stmt->bindParam(":usbcid", $usbcid);
+		$stmt->bindParam(":login", $login);
 		$stmt->execute();
 
 		$user = $stmt->fetch();
@@ -163,22 +163,22 @@ class User extends Model {
 		$expectedPost = array(
 			'CSRFName' => "",
 			'CSRFToken' => "",
-			'usbcid' => "",
+			'username' => "",
+			'email' => "",
 			'password' => "",
 			'password2' => "",
-			'fullname' => "",
-			'usbcavg' => ""
 		);
 		if ( count(array_intersect_key($_POST, $expectedPost)) != count($_POST) ) {
+			// [todo] This should already be covered by some js, but just incase
+			//          Tell the user what field is empty
 			$this->setAlert('danger', "Field empty");
 			return false;
 		}
 
-		$usbcid = $_POST["usbcid"];
+		$username = $_POST["username"];
+		$email = $_POST["email"];
 		$password = $_POST["password"];
 		$repeatpassword = $_POST["password2"];
-		$fullname = $_POST["fullname"];
-		$usbcavg = $_POST["usbcavg"];
 
 		if ($password !== $repeatpassword) {
 			$this->setAlert('danger', "Passwords don't match". $password . $repeatpassword);
@@ -186,18 +186,17 @@ class User extends Model {
 		}
 
 		// Check if the username, or email is already in use
-		if ($this->USBCIDExists($usbcid)) {
-			$this->setAlert('danger', "USBC ID already has an account");
+		if ($this->userExists($login)) {
+			$this->setAlert('danger', "Account already exists");
 			return false;
 		}
 
 		$hash = password_hash($password, PASSWORD_BCRYPT);
 
-		$stmt = $this->db->prepare("INSERT INTO user VALUES(NULL, :usbcid, :fullname, :avg, :hash, '', 5, 1)");
+		$stmt = $this->db->prepare("INSERT INTO user VALUES(NULL, :username, :email, :hash, '', 5, 1)");
 
-		$stmt->bindValue(":usbcid", $usbcid);
-		$stmt->bindValue(":fullname", $fullname);
-		$stmt->bindValue(":avg", $usbcavg);
+		$stmt->bindValue(":username", $username);
+		$stmt->bindValue(":email", $email);
 		$stmt->bindValue(":hash", $hash);
 
 		$stmt->execute();
@@ -285,7 +284,7 @@ class User extends Model {
 	 *
 	 * @return boolean
 	 */
-	public function userEmailExists($username, $email = null) {
+	public function userExists($username, $email = null) {
 		if (is_null($email)) {
 			$stmt = $this->db->prepare("SELECT email FROM user WHERE username = :username");
 		} else {
@@ -294,14 +293,6 @@ class User extends Model {
 		}
 
 		$stmt->bindParam(":username", $username);
-		$stmt->execute();
-
-		return count($stmt->fetchAll()) == 1;
-	}
-
-	public function USBCIDExists($usbcid) {
-		$stmt = $this->db->prepare("SELECT usbcid FROM user WHERE usbcid = :usbcid");
-		$stmt->bindParam(":usbcid", $usbcid);
 		$stmt->execute();
 
 		return count($stmt->fetchAll()) == 1;
@@ -344,29 +335,12 @@ class User extends Model {
 		$stmt->bindParam(":uid", $_SESSION["uid"]);
 		$stmt->bindParam(":sid", $_SESSION["sid"]);
 
-		try {
-			$stmt->execute();
-		} catch (PDOException $e) {
-			$this->checkTablesExist();
-			return $this->isLogged();
-		}
-
-
 		$row = $stmt->fetch();
 
-		if ($row["uid"] != $_SESSION["uid"]) {
-			return false;
-		}
-
-		if ($row["sid"] != $_SESSION["sid"]) {
-			return false;
-		}
-
-		if ($row["tid"] != $_SESSION["tid"]) {
-			return false;
-		}
-
-		if ($row["ip"] != $_SERVER["REMOTE_ADDR"]) {
+		if ($row["uid"] != $_SESSION["uid"] ||
+			$row["sid"] != $_SESSION["sid"] ||
+			$row["tid"] != $_SESSION["tid"] ||
+			$row["ip"] != $_SERVER["REMOTE_ADDR"]) {
 			return false;
 		}
 

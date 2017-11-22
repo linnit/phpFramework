@@ -51,7 +51,7 @@ Class Controller {
 		$this->request("/account/?{action}/?{page}/?{pageno}", "pages@account");
 
 		$this->request("/resetpassword", "pages@resetPassword");
-		$this->request("/abuse", "pages@abuse");
+		$this->request("/flag/{post}", "pages@abuse");
 		$this->request("/faq", "pages@faq");
 		$this->request("/terms-of-service", "pages@termsOfService");
 		$this->request("/privacy-policy", "pages@privacyPolicy");

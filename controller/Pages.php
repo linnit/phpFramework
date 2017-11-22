@@ -297,24 +297,8 @@ class Pages extends Controller {
 		}
 	}
 
-	public function enterevent() {
-		if (!$this->view->csrf_validate()) {
-			$eventname = "event_" . mt_rand(0,mt_getrandmax());
-			$eventtoken = $this->view->csrf_generate_token($loginname);
-
-			$this->view->render("enterevent", array("CSRFEventName" => $eventname, "CSRFEventToken" => $eventtoken));
-		} elseif (isset($_POST["HID"])) {
-			echo "You have entered an event..";
-			return true;
-		}
-	}
-
-	public function winnerscircle() {
-		$this->view->render("winnerscircle");
-	}
-
-	public function abuse() {
-		$this->view->render("abuse");
+	public function flag() {
+		$this->view->render("flag");
 	}
 
 	public function faq() {

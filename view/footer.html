@@ -3,7 +3,7 @@
         <div class="container">
           <div class="content has-text-right">
             <p>
-            &copy; 2017 <a href="/faq">FAQ</a> <a href="/privacy-policy">Privacy Policy</a> {% if userlevel < 10 %}<a href="/logout">Logout</a>{% endif %}
+            &copy; 2017 <a href="{{ siteUrl }}/faq">FAQ</a> <a href="{{ siteUrl }}/privacy-policy">Privacy Policy</a> {% if userlevel < 10 %}<a href="{{ siteUrl }}/logout">Logout</a>{% endif %}
             </p>
           </div>
         </div>
@@ -12,7 +12,7 @@
   </body>
     <noscript id="deferred-styles">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="css/tooltip.css">
+    <link rel="stylesheet" href="{{ siteUrl }}/css/tooltip.css">
     </noscript>
     <script>
       var loadDeferredStyles = function() {
@@ -31,11 +31,11 @@
 <script>
 $(document).ready(function() {
 $("#searchform").submit(function( event ) {
-  window.location.href = '/search/'+$("#search").val();
+  window.location.href = '{{ siteUrl }}/search/'+$("#search").val();
   event.preventDefault();
 });
 $("#searchformfull").submit(function( event ) {
-  window.location.href = '/search/'+$("#searchfull").val();
+  window.location.href = '{{ siteUrl }}/search/'+$("#searchfull").val();
   event.preventDefault();
 });
 

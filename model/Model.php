@@ -40,7 +40,7 @@ Class Model {
 			$this->db->setAttribute( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
 
 			// https://stackoverflow.com/questions/10113562/pdo-mysql-use-pdoattr-emulate-prepares-or-not
-			$this->db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
+			$this->db->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
 		} catch (PDOException $e) {
 			echo 'Error: ' .$e->getMessage();
 			throw new PDOException("Error connecting to database.");
@@ -49,6 +49,7 @@ Class Model {
 		$this->user = new User($this);
 		$this->post = new Post($this);
 
+		// [todo] On run this function on the first ever visit/install
 		$this->checkTablesExist();
 
 		// danger, warning, success
