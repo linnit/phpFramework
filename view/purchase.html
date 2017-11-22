@@ -1,84 +1,107 @@
 {{ include('header.html') }}
-				<div class="inner cover">
-					<div class="row">
-						<div class="col-lg-4">
-							<h2>Tiny</h2>
-							<p>
-								<ul class="list-group">
-									<li class="list-group-item">512 MB RAM</li>
-									<li class="list-group-item">1 CPU Core</li>
-									<li class="list-group-item">10GB HDD</li>
-									<li class="list-group-item">£2/Month</li>
-									<li class="list-group-item">
-										<select class="form-control vps-choice" id="tinyVps">
-											<option>Amount</option>
-											<option value="0">0</option>
-											<option value="1">1</option>
-											<option value="2">2</option>
-											<option value="3">3</option>
-											<option value="4">4</option>
-											<option value="5">5</option>
-										</select>
-									</li>
-								</ul>
-							</p>
-						</div>
-						<div class="col-lg-4">
-							<h2>Small</h2>
-							<p>
-								<ul class="list-group">
-									<li class="list-group-item">1 GB RAM</li>
-									<li class="list-group-item">1 CPU Core</li>
-									<li class="list-group-item">20GB HDD</li>
-									<li class="list-group-item">£3/Month</li>
-									<li class="list-group-item">
-										<select class="form-control vps-choice" id="smallVps">
-											<option>Amount</option>
-											<option value="0">0</option>
-											<option value="1">1</option>
-											<option value="2">2</option>
-											<option value="3">3</option>
-											<option value="4">4</option>
-											<option value="5">5</option>
-										</select>
-									</li>
-								</ul>
-							</p>
-						</div>
-						<div class="col-lg-4">
-							<h2>Medium</h2>
-							<p>
-								<ul class="list-group">
-									<li class="list-group-item">2 GB RAM</li>
-									<li class="list-group-item">2 CPU Cores</li>
-									<li class="list-group-item">30GB HDD</li>
-									<li class="list-group-item">£6/Month</li>
-									<li class="list-group-item">
-										<select class="form-control vps-choice" id="mediumVps">
-											<option>Amount</option>
-											<option value="0">0</option>
-											<option value="1">1</option>
-											<option value="2">2</option>
-											<option value="3">3</option>
-											<option value="4">4</option>
-											<option value="5">5</option>
-										</select>
-									</li>
-								</ul>
-							</p>
-						</div>
-					</div>
-					<div class="">
-						<form action="" id="paymentForm" method="POST">
-							<input type="hidden" name="CSRFName" value="{{ stuff.CSRFName }}">
-							<input type="hidden" name="CSRFToken" value="{{ stuff.CSRFToken }}">
-							<input type="hidden" name="stripeToken" id="stripeToken">
-							<input type="hidden" name="stripeEmail" id="stripeEmail">
-							<input type="hidden" name="stripeAmount" id="stripeAmount">
-							<input type="hidden" name="vpsChosen" id="vpsChosen">
-						</form>
-						<p>4242 4242 4242 4242</p>	
-						<button class="btn btn-secondary" id="paymentButton">Purchase</button>
-					</div>
-
+<div id="alerts"></div>
+<div class="container">
+	<div class="row justify-content-lg-center">
+		{% for product in stuff.products %}
+		<div class="col-lg-4">
+			<h2>{{ product.title }}</h2>
+			<p>
+				<ul class="list-group">
+					{% for feature in attribute(stuff.features, product.id) %}
+					<li class="list-group-item">{{ feature }}</li>
+					{% endfor %}
+					<li class="list-group-item">£{{ product.price }}/Month</li>
+					<li class="list-group-item">
+						<select class="form-control choice" id="{{ product.stripe_sub_plan }}">
+							<option>Amount</option>
+							<option value="0">0</option>
+							<option value="1">1</option>
+							<option value="2">2</option>
+							<option value="3">3</option>
+							<option value="4">4</option>
+							<option value="5">5</option>
+						</select>
+					</li>
+				</ul>
+			</p>
+		</div>
+		{% endfor %}
+		{% if stuff.products|length == 0 %}
+			No products!
+		{% endif %}
+	</div>
+	<div class="">
+		<form action="" id="paymentForm" method="POST">
+			<input type="hidden" name="CSRFName" value="{{ stuff.CSRFName }}">
+			<input type="hidden" name="CSRFToken" value="{{ stuff.CSRFToken }}">
+			<input type="hidden" name="stripeToken" id="stripeToken">
+			<input type="hidden" name="stripeEmail" id="stripeEmail">
+			<input type="hidden" name="stripeAmount" id="stripeAmount">
+			<input type="hidden" name="productChosen" id="productChosen">
+		</form>
+		<div class="col text-center">
+			<p>4242 4242 4242 4242</p>
+			<button class="btn btn-secondary" id="paymentButton">Purchase</button>
+		</div>
+	</div>
+</div>
 {{ include('footer.html') }}
+
+<script>
+
+var prices = {
+	{% for product in stuff.products %}
+	{{ product.stripe_sub_plan }}: {{ product.price }},
+	{% endfor %}
+};
+
+var chosenProduct = {};
+
+var finalPrice = 0;
+
+$('.choice').on('change', function() {
+	chosenProduct[$(this).attr('id')] = $(this).val();
+	calcFinalPrice();
+});
+
+function calcFinalPrice() {
+	finalPrice = 0;
+	for (var i in chosenProduct) {
+		finalPrice += chosenProduct[i] * prices[i];
+	}
+	$("#productChosen").val($.param(chosenProduct));
+}
+
+
+var handler = StripeCheckout.configure({
+	// Set in .env
+	key: '{{ stuff.stripePubKey }}',
+	locale: 'auto',
+	token: function(token) {
+  	$("#stripeToken").val(token.id);
+  	$("#stripeEmail").val(token.email);
+		$("#stripeAmount").val(finalPrice * 100);
+		$("#paymentForm").submit();
+	}
+});
+
+$('#paymentButton').on('click', function (e) {
+	var amount = finalPrice * 100;
+	if (amount > 0) {
+		handler.open({
+			email: 'ryan.linnit@outlook.com',
+			name: '{{ siteName }}',
+			description: '',
+			zipCode: false,
+			currency: 'gbp',
+			amount: amount
+		});
+	} else {
+		$('#alerts').html('<div class="alert alert-danger alert-dismissible" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>You have not selected a VPS</div>');
+	}
+	e.preventDefault();
+});
+
+$(window).on('popstate', function () { handler.close();});
+
+</script>

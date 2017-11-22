@@ -1,0 +1,58 @@
+{{ include('header.html') }}
+<section class="section">
+<div class="container">
+    <h1 class="title">Search</h1>
+    <h2 class="subtitle">Results for: {{ stuff.searchterm }}</h2>
+<form id="searchformfull" method="get" action="/search/">
+<div class="field has-addons">
+  <div class="control is-expanded">
+    <input id="searchfull" class="input is-large" autocomplete="off" type="text" placeholder="I want to learn..." value="{{ stuff.searchterm }}">
+  </div>
+  <div class="control">
+    <button type="submit" class="button is-primary is-large">
+      <span class="icon"><i class="fa fa-search"></i></span>
+    </button>
+  </div>
+</div>
+</form>
+  <hr>
+  <div class="columns">
+{% for post in stuff.posts %}
+    <div class="column">
+      <div class="card">
+        <header class="card-header">
+          <p class="card-header-title">
+            {{ post.title }}
+          </p>
+        </header>
+        <div class="card-content">
+          <div class="content">
+            {{ post.shortdescription }}
+            <br>
+            <a href="/category/{{ post.category }}" class="tag">{{ post.category }}</a>
+          </div>
+        </div>
+        <footer class="card-footer">
+          <a href="/learn/{{ post.url}}" class="card-footer-item"><span class="icon"><i class="fa fa-expand"></i></span>Learn!</a>
+          {% if userlevel < 10 %}
+            {% if post.saved is defined %}
+          <a href="/unsave/{{ post.url}}" class="card-footer-item"><span class="icon"><i class="fa fa-bookmark-o"></i></span> Remove Saved</a>
+            {% else %}
+          <a href="/save/{{ post.url}}" class="card-footer-item"><span class="icon"><i class="fa fa-bookmark"></i></span> Save for later</a>
+            {% endif %}
+          {% else %}
+          <a href="/login" class="card-footer-item is-tooltip-primary tooltip" data-tooltip="Login to save stuff!"><span class="icon"><i class="fa fa-bookmark"></i></span> Save for later</a>
+          {% endif %}
+        </footer>
+      </div>
+    </div>
+{% if loop.index is divisible by(3) %}
+  </div>
+  <div class="columns">
+{% endif %}
+{% endfor %}
+  </div>
+</div>  
+</section>
+{{ include('pagination.html') }}
+{{ include('footer.html') }}

@@ -4,12 +4,15 @@ require 'model/Model.php';
 require 'controller/View.php';
 require 'controller/Pages.php';
 require 'controller/Admin.php';
+require 'controller/Account.php';
 
 Class Controller {
 	public function __construct() {
-		$this->model		= new Model();
+		$this->model		= new \Model();
 		$this->view		= new View($this->model);
-		$this->pages		= new Pages($this->model, $this->view);
+		$this->admin		= new Admin($this->model, $this->view);
+		$this->account		= new Account($this->model, $this->view);
+		$this->pages		= new Pages($this->model, $this->view, $this->admin, $this->account);
 
 		$this->actioned		= false;
 	}
@@ -29,32 +32,43 @@ Class Controller {
 
 		// Index
 		$this->request("/", "pages@index");
+		$this->request("/page/{pageno}", "pages@index");
+		$this->request("/category/{category}/?{page}/?{pageno}", "pages@index");
 
 		// Login page
-		$this->request("/login", "pages@login");
+		$this->request("/login/?{redirect1}/?{redirect2}", "pages@login");
 		// Logout
 		$this->request("/logout", "pages@logout");
+		// Register
+		$this->request("/register", "pages@register");
 
-		$this->request("/purchase", "pages@purchase");
-		$this->request("/customer", "pages@customer");
+		// Search
+		$this->request("/search/{search}/?{page}/?{pageno}", "pages@search");
+
+		$this->request("/post/?{item}", "pages@post");
+		$this->request("/save/?{item}", "pages@save");
+		$this->request("/unsave/?{item}", "pages@unsave");
+		$this->request("/account/?{action}/?{page}/?{pageno}", "pages@account");
+
 		$this->request("/resetpassword", "pages@resetPassword");
 		$this->request("/abuse", "pages@abuse");
 		$this->request("/faq", "pages@faq");
-		$this->request("/terms-of-service", "pages@terms_of_service");
-		$this->request("/privacy-policy", "pages@privacy_policy");
+		$this->request("/terms-of-service", "pages@termsOfService");
+		$this->request("/privacy-policy", "pages@privacyPolicy");
 
-		$this->request("/{404}", "pages@fourohfour");
+		$this->request("/admin/?{action}/?{variable}", "pages@admin");
+
+		$this->request("/{404}", "pages@fourOhFour");
 	}
 
 	/**
 	 * Parse request and run desired function
 	 * [TODO] Maybe allow query strings in the URI?
 	 *
-	 * @param  string $request [description]
-	 * @param  string $action  [description]
-	 * @param  [type] $args    [description]
+	 * @param  str $request Possible URI request
+	 * @param  str $action  Controller and function to run if request matches
 	 *
-	 * @return [type]          [description]
+	 * @return bool
 	 */
 	public function request($request, $action) {
 		$definedURI = explode('/', $request);

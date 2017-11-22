@@ -1,21 +1,153 @@
 {{ include('header.html') }}
-<form class="form-horizontal" method="post" action="/login">
-	<input type="hidden" name="CSRFName" value="{{ stuff.CSRFName }}">
-	<input type="hidden" name="CSRFToken" value="{{ stuff.CSRFToken }}">
-	<div class="form-group">
-		<div class="col-sm-12">
-			<input type="text" class="form-control" id="inputEmail" name="login" placeholder="Email">
-		</div>
-	</div>
-	<div class="form-group">
-		<div class="col-sm-12">
-			<input type="password" class="form-control" id="inputPassword" name="password" placeholder="Password">
-		</div>
-	</div>
-	<div class="form-group">
-		<div class="col-sm-12">
-			<button type="submit" class="btn btn-secondary btn-block">Sign in</button>
-		</div>
-	</div>
+
+<style>
+.is-divider-vertical {
+    display: block;
+    padding: 2rem;
+    position: relative;
+}
+.is-divider-vertical::before {
+    border-left: .1rem solid #dbdbdb;
+    bottom: 1rem;
+    content: "";
+    display: block;
+    left: 50%;
+    position: absolute;
+    top: 1rem;
+    -webkit-transform: translateX(-50%);
+    -ms-transform: translateX(-50%);
+    transform: translateX(-50%);
+}
+.is-divider-vertical[data-content]::after {
+    /*left: 50%;*/
+    padding: .4rem 0;
+    position: relative;
+    top: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+}
+.is-divider[data-content]::after, .is-divider-vertical[data-content]::after {
+    background: #fff;
+    color: #b5b5b5;
+    content: attr(data-content);
+    display: inline-block;
+    font-size: .75rem;
+    padding: .5rem .8rem;
+    -webkit-transform: translateY(-1.1rem);
+    -ms-transform: translateY(-1.1rem);
+    transform: translateY(-1.1rem);
+    text-align: center;
+}
+</style>
+
+<section class="section">
+<div class="columns">
+  <div class="column">
+  <div>
+    <h1 class="title">Login</h1>
+  </div>
+  <hr>
+<div>
+<form class="form" method="post">
+<input type="hidden" name="CSRFName" value="{{ stuff.CSRFLoginName }}">
+<input type="hidden" name="CSRFToken" value="{{ stuff.CSRFLoginToken }}">
+
+<div class="field">
+  <p class="control has-icons-left has-icons-right">
+    <input class="input" type="text" placeholder="USBC ID" name="usbcid">
+    <span class="icon is-small is-left">
+      <i class="fa fa-user-circle"></i>
+    </span>
+  </p>
+</div>
+<div class="field">
+  <p class="control has-icons-left">
+    <input class="input" type="password" placeholder="Password" name="password">
+    <span class="icon is-small is-left">
+      <i class="fa fa-lock"></i>
+    </span>
+  </p>
+</div>
+<div class="field is-grouped">
+  <p class="control">
+    <button class="button is-primary">
+      Login
+    </button>
+  </p>
+  <p class="control">
+    <a class="button is-light" href="{{ siteUrl }}/forgotpassword">
+      Forgot Password
+    </a>
+  </p>
+</div>
 </form>
+</div>
+</div>
+<div class="is-divider-vertical" data-content="OR"></div>
+  <div class="column">
+  <div>
+    <h1 class="title">Register</h1>
+  </div>
+  <hr>
+<div>
+<form class="form" method="post" action="{{ siteUrl }}/register">
+<input type="hidden" name="CSRFName" value="{{ stuff.CSRFRegisterName }}">
+<input type="hidden" name="CSRFToken" value="{{ stuff.CSRFRegisterToken }}">
+<div class="field">
+  <p class="control has-icons-left has-icons-right">
+    <input class="input" type="text" placeholder="USBC ID" name="usbcid">
+    <span class="icon is-small is-left">
+      <i class="fa fa-user-circle"></i>
+    </span>
+  </p>
+</div>
+<div class="field">
+  <p class="control has-icons-left has-icons-right">
+    <input class="input" type="text" placeholder="Full Name" name="fullname">
+    <span class="icon is-small is-left">
+      <i class="fa fa-info-circle"></i>
+    </span>
+  </p>
+</div>
+<div class="field">
+  <p class="control has-icons-left has-icons-right">
+    <input class="input" type="text" placeholder="USBC League average" name="usbcavg">
+    <span class="icon is-small is-left">
+      <i class="fa fa-area-chart"></i>
+    </span>
+  </p>
+</div>
+<div class="field">
+  <p class="control has-icons-left">
+    <input class="input" type="password" placeholder="Password" name="password">
+    <span class="icon is-small is-left">
+      <i class="fa fa-lock"></i>
+    </span>
+  </p>
+</div>
+<div class="field">
+  <p class="control has-icons-left">
+    <input class="input" type="password" placeholder="Confirm Password" name="password2">
+    <span class="icon is-small is-left">
+      <i class="fa fa-lock"></i>
+    </span>
+  </p>
+</div>
+<div class="field is-grouped">
+  <p class="control">
+    <button class="button is-primary">
+      Register
+    </button>
+  </p>
+</div>
+</form>
+</div>
+  </div>
+
+</div>
+
+</section>
+
+
 {{ include('footer.html') }}

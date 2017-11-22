@@ -1,0 +1,29 @@
+{{ include('header.html') }}
+<section class="section">
+  <div class="container">
+    <h1 class="title">Sign up for a Pot Bowling event</h1>
+  </div>
+  <hr>
+  <div class="content">
+<form class="form" method="post">
+<input type="hidden" name="CSRFName" value="{{ stuff.CSRFEventName }}">
+<input type="hidden" name="CSRFToken" value="{{ stuff.CSRFEventToken }}">
+<div class="field">
+  <p class="control has-icons-left has-icons-right">
+    <input class="input" type="text" placeholder="House ID" name="HID">
+    <span class="icon is-small is-left">
+      <i class="fa fa-home"></i>
+    </span>
+  </p>
+</div>
+<div class="field is-grouped">
+  <p class="control">
+    <button class="button is-primary">
+      Enter Event
+    </button>
+  </p>
+</div>
+</form>
+</div>
+</section>
+{{ include('footer.html') }}

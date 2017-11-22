@@ -19,19 +19,25 @@ class User extends Model {
 	 * @return boolean
 	 */
 	public function login() {
-		$email = $_POST["login"];
+		$usbcid = $_POST["usbcid"];
 		$password = $_POST["password"];
 
-		$stmt = $this->db->prepare("SELECT id, password FROM user WHERE email = :email");
+		$stmt = $this->db->prepare("SELECT id, password FROM user WHERE usbcid = :usbcid");
 
-		$stmt->bindParam(":email", $email);
+		$stmt->bindParam(":usbcid", $usbcid);
 		$stmt->execute();
 
 		$user = $stmt->fetch();
 
+		if (!isset($user["id"])) {
+			$this->bruteforceLoginCheck(0);
+		} else {
+		 	$this->bruteforceLoginCheck($user["id"]);
+		}
+
 		if (!$user) {
-			$this->parent->setAlert("danger", "Incorrect Login (Bad e-mail)");
-			$badLogin ="insert into login_attempts values('127.0.0.1', 4, NULL);";
+			$this->setAlert("danger", "Incorrect Login");
+
 			return false;
 		}
 
@@ -42,14 +48,74 @@ class User extends Model {
 			$this->uid = $user["id"];
 			$this->getIDs();
 
-			$this->parent->setAlert("success", "Login Success");
+			$this->setAlert("success", "Login Success");
+
+			$this->removeLoginAttempt($this->uid);
+
+			$this->userLoggedin = true;
+
 			return true;
 		} else {
-			$this->parent->setAlert("danger", "Incorrect Login (Bad password)");
+			$this->setAlert("danger", "Incorrect Login");
+
 			return false;
 		}
 	}
 
+	/**
+	 * Check login form for bruteforce attempts
+	 *
+	 * @param  int $uid User ID to check against bruteforce
+	 *
+	 */
+	public function bruteforceLoginCheck($uid) {
+		$stmt = $this->db->prepare("SELECT count(ip_address) AS attempts FROM login_attempts WHERE ip_address = :ipaddr AND DATE(`timestamp`) = CURDATE()");
+		$stmt->bindValue(":ipaddr", $_SERVER["REMOTE_ADDR"]);
+		$stmt->execute();
+
+		// Remove old attempts
+		$removeOld = $this->db->prepare("DELETE FROM login_attempts WHERE DATE(`timestamp`) < CURDATE()");
+		$removeOld->execute();
+
+		$result = $stmt->fetch();
+		$attempts = (int) $result["attempts"];
+
+		// Try and stop bruteforce attempts by slowing them down?
+		// Maybe revise this?
+		// [TODO] maybe after 10 incorrect, block ip..
+		if ($attempts <= 3) {
+			$sleep = 0;
+		} elseif ($attempts <= 5) {
+			$sleep = 5;
+		} else {
+			$sleep = $attempts * 5;
+		}
+
+		sleep($sleep);
+
+		$newAttempt = $this->db->prepare("INSERT INTO login_attempts VALUES(:ipaddr, :uid, NULL)");
+		$newAttempt->bindValue(":ipaddr", $_SERVER["REMOTE_ADDR"]);
+		$newAttempt->bindValue(":uid", $uid);
+		$newAttempt->execute();
+	}
+
+	/**
+	 * On successful login remove login_attempts
+	 *
+	 * @param  int $uid User id
+	 */
+	public function removeLoginAttempt($uid) {
+		$stmt = $this->db->prepare("DELETE FROM login_attempts WHERE ip_address = :ipaddr AND uid = :uid");
+		$stmt->bindValue(":ipaddr", $_SERVER["REMOTE_ADDR"]);
+		$stmt->bindValue(":uid", $uid);
+
+		$stmt->execute();
+	}
+
+	/**
+	 * Get user level of logged in user
+	 * @return int User level
+	 */
 	public function getUserLevel() {
 		if (!$this->userLoggedin) {
 			return 10;
@@ -72,7 +138,7 @@ class User extends Model {
 	 */
 	public function logout() {
 		if (!isset($_SESSION["uid"])) {
-			$this->parent->setAlert("success", "No Session to destroy");
+			$this->setAlert("success", "No Session to destroy");
 			return true;
 		}
 
@@ -83,44 +149,60 @@ class User extends Model {
 
 		session_destroy();
 
-		$this->parent->setAlert("success", "You have been logged out");
+		$this->setAlert("success", "You have been logged out");
 
 		return true;
 	}
 
 	/**
 	 * [register description]
-	 * @param  [type] $stripeId       [description]
-	 * @param  [type] $email          [description]
-	 * @param  [type] $password       [description]
-	 * @param  [type] $repeatpassword [description]
 	 *
 	 * @return boolean                 [description]
 	 */
-	public function register($stripeId, $email, $password = null, $repeatpassword = null) {
-		if (is_null($password)) {
-			$password = $this->random_str(16);
-		} else {
-			if ($password !== $repeatpassword) {
-				$this->setAlert('danger', "Passwords don't match");
-				return false;
-			}
+	public function register() {
+		$expectedPost = array(
+			'CSRFName' => "",
+			'CSRFToken' => "",
+			'usbcid' => "",
+			'password' => "",
+			'password2' => "",
+			'fullname' => "",
+			'usbcavg' => ""
+		);
+		if ( count(array_intersect_key($_POST, $expectedPost)) != count($_POST) ) {
+			$this->setAlert('danger', "Field empty");
+			return false;
 		}
 
-		if ($this->userExists($email)) {
-			$this->setAlert('danger', "Email address already has an account");
+		$usbcid = $_POST["usbcid"];
+		$password = $_POST["password"];
+		$repeatpassword = $_POST["password2"];
+		$fullname = $_POST["fullname"];
+		$usbcavg = $_POST["usbcavg"];
+
+		if ($password !== $repeatpassword) {
+			$this->setAlert('danger', "Passwords don't match". $password . $repeatpassword);
+			return false;
+		}
+
+		// Check if the username, or email is already in use
+		if ($this->USBCIDExists($usbcid)) {
+			$this->setAlert('danger', "USBC ID already has an account");
 			return false;
 		}
 
 		$hash = password_hash($password, PASSWORD_BCRYPT);
 
-		$stmt = $this->db->prepare("INSERT INTO user VALUES(NULL, :email, :hash, '', 5, 1, :stripeId)");
+		$stmt = $this->db->prepare("INSERT INTO user VALUES(NULL, :usbcid, :fullname, :avg, :hash, '', 5, 1)");
 
-		$stmt->bindValue(":email", $email);
+		$stmt->bindValue(":usbcid", $usbcid);
+		$stmt->bindValue(":fullname", $fullname);
+		$stmt->bindValue(":avg", $usbcavg);
 		$stmt->bindValue(":hash", $hash);
-		$stmt->bindValue(":stripeId", $stripeId);
 
 		$stmt->execute();
+
+		$this->login();
 
 		return true;
 	}
@@ -144,24 +226,25 @@ class User extends Model {
 	}
 
 	/**
-	 * [email_new_user description]
-	 * @param  [type] $email    [description]
-	 * @param  [type] $password [description]
+	 * Send an email to the new user with their password
+	 *
+	 * @param  str $email    [description]
+	 * @param  str $password [description]
 	 * @return [type]           [description]
 	 */
 	public function email_new_user($email, $password) {
-		$mail->setFrom("noreply{$this->model->siteDomain}", $this->model->siteName);
-		$mail->addAddress($email);
+		$this->mail->setFrom("noreply{$this->model->siteDomain}", $this->model->siteName);
+		$this->mail->addAddress($email);
 
-		$mail->isHTML(true);
+		$this->mail->isHTML(true);
 
-		$mail->Subject = $this->model->siteName . ' Registration';
-		$mail->Body    = 'This is the HTML message body <b>in bold!</b><br>Password: ' .$password;
-		$mail->AltBody = 'This is the body in plain text for non-HTML mail clients\n Password:' .$password;
+		$this->mail->Subject = $this->model->siteName . ' Registration';
+		$this->mail->Body    = 'This is the HTML message body <b>in bold!</b><br>Password: ' .$password;
+		$this->mail->AltBody = 'This is the body in plain text for non-HTML mail clients\n Password:' .$password;
 
-		if(!$mail->send()) {
+		if(!$this->mail->send()) {
 		    echo 'Message could not be sent.';
-		    echo 'Mailer Error: ' . $mail->ErrorInfo;
+		    echo 'Mailer Error: ' . $this->mail->ErrorInfo;
 		} else {
 		    echo 'Message has been sent';
 		}
@@ -202,10 +285,39 @@ class User extends Model {
 	 *
 	 * @return boolean
 	 */
-	public function userExists($email) {
-		$stmt = $this->db->prepare("SELECT email FROM user WHERE email = :email");
+	public function userEmailExists($username, $email = null) {
+		if (is_null($email)) {
+			$stmt = $this->db->prepare("SELECT email FROM user WHERE username = :username");
+		} else {
+			$stmt = $this->db->prepare("SELECT email FROM user WHERE username = :username OR email = :email");
+			$stmt->bindParam(":email", $email);
+		}
 
-		$stmt->bindParam(":email", $email);
+		$stmt->bindParam(":username", $username);
+		$stmt->execute();
+
+		return count($stmt->fetchAll()) == 1;
+	}
+
+	public function USBCIDExists($usbcid) {
+		$stmt = $this->db->prepare("SELECT usbcid FROM user WHERE usbcid = :usbcid");
+		$stmt->bindParam(":usbcid", $usbcid);
+		$stmt->execute();
+
+		return count($stmt->fetchAll()) == 1;
+	}
+
+	/**
+	 * Check if a user exists with the $id given
+	 *
+	 * @param  int $id	ID of user
+	 *
+	 * @return boolean
+	 */
+	public function userIdExists($id) {
+		$stmt = $this->db->prepare("SELECT id FROM user WHERE id = :id");
+
+		$stmt->bindParam(":id", $id);
 		$stmt->execute();
 
 		return count($stmt->fetchAll()) == 1;
@@ -232,7 +344,13 @@ class User extends Model {
 		$stmt->bindParam(":uid", $_SESSION["uid"]);
 		$stmt->bindParam(":sid", $_SESSION["sid"]);
 
-		$stmt->execute();
+		try {
+			$stmt->execute();
+		} catch (PDOException $e) {
+			$this->checkTablesExist();
+			return $this->isLogged();
+		}
+
 
 		$row = $stmt->fetch();
 
@@ -261,6 +379,19 @@ class User extends Model {
 	}
 
 	/**
+	 * Return all users
+	 *
+	 * @return array All user results
+	 */
+	public function getAllUsers() {
+		$stmt = $this->db->prepare("SELECT * FROM user ORDER BY id ASC");// LIMIT 0,20"); [TODO] Some kind of pagination?
+
+		$stmt->execute();
+
+		return $stmt->fetchAll();
+	}
+
+	/**
 	 * Get currently logged in user's email address
 	 * @return string/false email address of currently logged in user or false if not logged
 	 */
@@ -275,6 +406,23 @@ class User extends Model {
 		$row = $stmt->fetch();
 
 		return $row["email"];
+	}
+
+	/**
+	 * [getStripeId description]
+	 * @return string Logged in user's Stripe ID
+	 */
+	public function getStripeId() {
+		if (!$this->userLoggedin) return false;
+
+		$stmt = $this->db->prepare("SELECT stripe_id FROM user WHERE id = :uid");
+		$stmt->bindParam(":uid", $this->uid);
+
+		$stmt->execute();
+
+		$row = $stmt->fetch();
+
+		return $row["stripe_id"];
 	}
 
 	/**
@@ -318,14 +466,54 @@ class User extends Model {
 	}
 
 	function getPagePerms($page) {
-		$stmt = $this->db->prepare("SELECT user_level FROM pages WHERE pagename = :page");
+		try {
+			$stmt = $this->db->prepare("SELECT user_level FROM pages WHERE pagename = :page");
 
-		$stmt->bindParam(":page", $page);
-		$stmt->execute();
+			$stmt->bindParam(":page", $page);
+			$stmt->execute();
+		} catch (PDOException $e) {
+			$this->checkTablesExist();
+			return $this->getPagePerms($page);
+		}
 
 		$page = $stmt->fetch();
 
 		return $page["user_level"];
+	}
+
+	/**
+	 * Get all information about user from user table
+	 *
+	 * @param  int $id ID of user to retrieve
+	 *
+	 * @return arr Array of user information
+	 */
+	function getUser($id) {
+		$stmt = $this->db->prepare("SELECT * FROM user WHERE id = :id");
+
+		$stmt->bindValue(":id", $id);
+
+		$stmt->execute();
+
+		return $stmt->fetch();
+
+	}
+
+	/**
+	 * Lock given user from logging into the system
+	 *
+	 * @param  int $id ID of user to lock
+	 *
+	 * @return int ID of user that has been locked
+	 */
+	function lockUser($id) {
+		$stmt = $this->db->prepare("UPDATE user SET enabled = 0 WHERE id = :id");
+
+		$stmt->bindValue(":id", $id);
+
+		$stmt->execute();
+
+		return $stmt->lastInsertId();
 	}
 
 }

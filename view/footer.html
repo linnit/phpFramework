@@ -1,94 +1,45 @@
-					<div class="mastfoot">
-						<div class="inner">
-							<p><a href="https://github.com/linnit">Ryan Linnit</a> - <a href="/abuse">Report Abuse</a> | <a href="/faq">FAQ</a> | <a href="/terms-of-service">TOS</a> | <a href="/privacy-policy">Privacy Policy</a></p>
-						</div>
-					</div>
-
-				</div>
-			</div>
-		</div>
-	</div>
-
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js" integrity="sha384-3ceskX3iaEnIogmQchP8opvBy3Mi7Ce34nWjpBIwVTHfGYWQS9jwHDVRnpKKHJg7" crossorigin="anonymous"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
-
-	<script src="https://checkout.stripe.com/checkout.js"></script>
-	<script>
-
-var p = { tinyVps:2,smallVps:3,mediumVps:6},c={},f;
-$('.vps-choice').on('change', function() { c[$(this).attr('id')] = $(this).val();g();});
-function g() { f = 0; for (var i in c) { f += c[i] * p[i]; } $("#vpsChosen").val($.param(c));}
-
-var handler = StripeCheckout.configure({
-	// Set in .env
-	key: '{{ stuff.stripePubKey }}',
-	locale: 'auto',
-	token: function(token) {
-		$("#stripeToken").val(token.id);
-		$("#stripeEmail").val(token.email);
-		$("#stripeAmount").val(f * 100);
-		$("#paymentForm").submit();
-	}
-});
-
-$('#paymentButton').on('click', function (e) {
-	var amount = f * 100;
-	if (amount > 0) {
-		handler.open({
-			name: '{{ siteName }}',
-			description: 'KVM VPS',
-			zipCode: false,
-			currency: 'gbp',
-			amount: amount
-		});
-	} else {
-		$('#alerts').html('<div class="alert alert-danger alert-dismissible" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>You have not selected a VPS</div>');
-	}
-	e.preventDefault();
-});
-
-$(window).on('popstate', function () { handler.close();});
-</script>
-
-
+    <section class="section">
+      <footer class="footer">
+        <div class="container">
+          <div class="content has-text-right">
+            <p>
+            &copy; 2017 <a href="/faq">FAQ</a> <a href="/privacy-policy">Privacy Policy</a> {% if userlevel < 10 %}<a href="/logout">Logout</a>{% endif %}
+            </p>
+          </div>
+        </div>
+      </footer>
+    </section>
+  </body>
+    <noscript id="deferred-styles">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/tooltip.css">
+    </noscript>
+    <script>
+      var loadDeferredStyles = function() {
+        var addStylesNode = document.getElementById("deferred-styles");
+        var replacement = document.createElement("div");
+        replacement.innerHTML = addStylesNode.textContent;
+        document.body.appendChild(replacement)
+        addStylesNode.parentElement.removeChild(addStylesNode);
+      };
+      var raf = requestAnimationFrame || mozRequestAnimationFrame ||
+          webkitRequestAnimationFrame || msRequestAnimationFrame;
+      if (raf) raf(function() { window.setTimeout(loadDeferredStyles, 0); });
+      else window.addEventListener('load', loadDeferredStyles);
+    </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script>
-
-/*
-
-var vpsPrice = {
-	tinyVps: 2,
-	smallVps: 3,
-	mediumVps: 6
-};
-
-var chosenVps = {};
-
-var finalPrice = 60;
-
-$('.vps-choice').on('change', function() {
-	chosenVps[$(this).attr('id')] = $(this).val();
-	calcFinalPrice();
-	console.log(finalPrice);
+$(document).ready(function() {
+$("#searchform").submit(function( event ) {
+  window.location.href = '/search/'+$("#search").val();
+  event.preventDefault();
+});
+$("#searchformfull").submit(function( event ) {
+  window.location.href = '/search/'+$("#searchfull").val();
+  event.preventDefault();
 });
 
-
-function calcFinalPrice() {
-	finalPrice = 0;
-
-	for (var i in chosenVps) {
-		finalPrice += chosenVps[i] * vpsPrice[i];
-	}
-
-	$("#vpsChosen").val($.param(chosenVps));
-}
-
-
-
-
-*/
-
+});
 </script>
-
-</body>
 </html>
+ 

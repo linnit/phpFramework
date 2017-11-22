@@ -1,0 +1,24 @@
+<section class="section">
+<div class="container">
+{% if stuff.pageCount > 1 %}
+<nav class="pagination" role="navigation" aria-label="pagination">
+  <a {% if stuff.currentPageNo != '1' %}href="{{ stuff.currentPage }}/page/{{ stuff.currentPageNo - 1 }}"{% else %}disabled{% endif %} class="pagination-previous">Previous</a>
+  <a {% if stuff.currentPageNo != stuff.pageCount %}href="{{ stuff.currentPage }}/page/{{ stuff.currentPageNo + 1 }}"{% else %}disabled{% endif %} class="pagination-next">Next page</a>
+  <ul class="pagination-list">
+
+{% for page in 1..stuff.pageCount %}
+{% if page == stuff.currentPageNo %}
+    <li>
+      <a href="{{ stuff.currentPage }}/page/{{ page }}" class="pagination-link is-current" aria-label="Page {{ page }}" aria-current="page">{{ page }}</a>
+    </li>
+{% else %}
+    <li>
+      <a href="{{ stuff.currentPage }}/page/{{ page }}" class="pagination-link" aria-label="Goto page 1">{{ page }}</a>
+    </li>
+{% endif %}
+{% endfor %}
+</ul>
+</nav>
+{% endif %}
+</div>
+</section>

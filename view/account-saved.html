@@ -1,0 +1,43 @@
+{{ include('header.html') }}
+<section class="section">
+
+{{ include('account-nav.html') }}
+
+<div class="container">
+
+{% if stuff.posts|length < 1 %}
+You haven't saved any items yet.
+{% else %}
+  <div class="columns">
+{% for post in stuff.posts %}
+    <div class="column">
+      <div class="card">
+        <header class="card-header">
+          <p class="card-header-title">
+            {{ post.title }}
+          </p>
+        </header>
+        <div class="card-content">
+          <div class="content">
+            {{ post.shortdescription }}
+            <br>
+            <a href="/category/{{ post.category }}" class="tag">{{ post.category }}</a>
+          </div>
+        </div>
+        <footer class="card-footer">
+          <a href="/learn/{{ post.url}}" class="card-footer-item"><span class="icon"><i class="fa fa-expand"></i></span>Learn!</a>
+          <a href="/unsave/{{ post.url}}" class="card-footer-item"><span class="icon"><i class="fa fa-bookmark-o"></i></span> Remove Saved</a>
+        </footer>
+      </div>
+    </div>
+{% if (loop.index) is divisible by(3) %}
+  </div>
+  <div class="columns">
+{% endif %}
+{% endfor %}
+  </div>
+{% endif %}
+</div>
+</section>
+{{ include('pagination.html') }}
+{{ include('footer.html') }}

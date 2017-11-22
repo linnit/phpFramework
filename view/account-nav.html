@@ -1,0 +1,11 @@
+<div class="container">
+<div class="tabs" style="padding-bottom: 1.5rem">
+  <ul>
+    <li {% if page == 'account' %}class="is-active"{% endif %}><a href="/account">Overview</a></li>
+    <li {% if page == 'account-saved' %}class="is-active"{% endif %}><a href="/account/saved">Saved</a></li>
+    <li {% if page == 'account-history' %}class="is-active"{% endif %}><a href="/account/history">History</a></li>
+    <li {% if page == 'account-submitted' %}class="is-active"{% endif %}><a href="/account/submitted">Submitted</a></li>
+    <li {% if page == 'account-settings' %}class="is-active"{% endif %}><a href="/account/settings">Account Settings</a></li>
+  </ul>
+</div>
+</div>

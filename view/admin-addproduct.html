@@ -1,0 +1,108 @@
+{{ include('header.html') }}
+<div class="container">
+  <div class="row">
+    {{ include('admin-nav.html') }}
+    <div class="col-sm-9 col-md-10 pt-3">
+      <form class="form-horizontal" method="post" action="">
+        <input type="hidden" name="CSRFName" value="{{ stuff.CSRFName }}">
+        <input type="hidden" name="CSRFToken" value="{{ stuff.CSRFToken }}">
+        <div class="form-group row justify-content-lg-center">
+          <div class="col col-lg-6">
+            <input type="text" class="form-control" id="inputproduct" name="product" placeholder="Product">
+          </div>
+        </div>
+        <div class="form-group row justify-content-lg-center">
+          <div class="col col-lg-6">
+            <input type="text" class="form-control" id="inputdescription" name="description" placeholder="Description">
+          </div>
+        </div>
+        <div class="features">
+          <input type="hidden" name="no_features" value="4" id="no_features">
+          <div class="form-group row justify-content-lg-center">
+            <div class="col col-lg-6">
+              <input type="text" class="form-control" id="inputfeature1" name="feature1" placeholder="Feature 1">
+            </div>
+          </div>
+          <div class="form-group row justify-content-lg-center">
+            <div class="col col-lg-6">
+              <input type="text" class="form-control" id="inputfeature2" name="feature2" placeholder="Feature 2">
+            </div>
+          </div>
+          <div class="form-group row justify-content-lg-center">
+            <div class="col col-lg-6">
+              <input type="text" class="form-control" id="inputfeature3" name="feature3" placeholder="Feature 3">
+            </div>
+          </div>
+          <div class="form-group row justify-content-lg-center">
+            <div class="col col-lg-6">
+              <input type="text" class="form-control" id="inputfeature4" name="feature4" placeholder="Feature 4">
+            </div>
+          </div>
+        </div>
+        <div class="form-group row justify-content-lg-center">
+          <div class="col col-lg-6">
+            <button type="button" class="btn btn-secondary" id="newFeature">+ Feature</button>
+          </div>
+        </div>
+        <div class="form-group row justify-content-lg-center">
+          <div class="col col-lg-6">
+            <select class="form-control" name="stripe_sub_plan" id="selectPlan" placeholder="Stripe Subscription Plan">
+              <option value="0" selected>No Subscription Plan</option>
+              {% for id, plan in stuff.plans %}
+              <option value="{{ id }}">{{ plan.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="form-group row justify-content-lg-center">
+          <div class="col col-lg-6 input-group">
+            <div class="input-group-addon">£</div>
+            <input type="text" class="form-control" id="inputPrice" name="price" placeholder="Price">
+            <div class="input-group-btn"> <button type="button" class="btn btn-secondary" id="useSubPrice">Use Subscription Price</button> </div>
+          </div>
+        </div>
+        <div class="form-group row justify-content-lg-center">
+          <div class="col col-lg-6">
+            <button type="submit" class="btn btn-secondary btn-block">Add Product</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{{ include('footer.html') }}
+<script>
+var prices = {
+  {% for id, plan in stuff.plans %}
+  {{ id }}:{{ plan.price }},
+  {% endfor %}
+};
+
+var features = 4;
+
+$('#useSubPrice').on('click', function() {
+  if (typeof prices[$('#selectPlan').val()] == 'undefined') {
+    formPrice = '0.00';
+  } else {
+    formPrice = parseFloat(prices[$('#selectPlan').val()]/ 100).toFixed(2);
+  }
+
+  $('#inputPrice').val(formPrice);
+});
+
+$('#newFeature').on('click', function() {
+  features++;
+  $('#no_features').val(features);
+  $('.features').append(
+    '\
+    <div class="form-group row justify-content-lg-center">\
+      <div class="col col-lg-6">\
+        <input type="text" class="form-control" id="inputfeature'+features+'" name="feature'+features+'" placeholder="Feature '+features+'">\
+      </div>\
+    </div>\
+    '
+  );
+});
+
+console.log(prices);
+</script>

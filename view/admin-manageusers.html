@@ -1,0 +1,49 @@
+{{ include('header.html') }}
+<div class="container">
+  <div class="row">
+    {{ include('admin-nav.html') }}
+    <div class="col-sm-9 col-md-10 pt-3">
+      <table class="table">
+        <thead class="thead-inverse">
+          <tr>
+            <th>#</th>
+            <th>E-Mail</th>
+            <th>Enabled</th>
+            <th>Stripe ID</th>
+            <th width="10%"></th>
+            <th width="10%"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in stuff.users %}
+          <tr>
+            <th scope="row">{{ user.id }}</th>
+            <td>{{ user.email }}</td>
+            <td>{{ user.enabled }}</td>
+            <td>{{ user.stripe_id }}</td>
+            <td>
+              <form method="post">
+                <input type="hidden" name="CSRFName" value="{{ stuff.CSRFName }}">
+                <input type="hidden" name="CSRFToken" value="{{ stuff.CSRFToken }}">
+                <input type="hidden" name="action" value="edituser">
+                <input type="hidden" name="user" value="{{ user.id }}">
+                <input type="submit" class="btn btn-secondary btn-sm" role="button" aria-disabled="true" value="Edit"></input>
+              </form>
+            </td>
+            <td>
+              <form method="post">
+                <input type="hidden" name="CSRFName" value="{{ stuff.CSRFName }}">
+                <input type="hidden" name="CSRFToken" value="{{ stuff.CSRFToken }}">
+                <input type="hidden" name="action" value="lockuser">
+                <input type="hidden" name="user" value="{{ user.id }}">
+                <input type="submit" class="btn btn-danger btn-sm" role="button" aria-disabled="true" value="Lock"></input>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{{ include('footer.html') }}

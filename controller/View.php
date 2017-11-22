@@ -4,8 +4,11 @@ class View extends Controller {
 	public function __construct($model) {
 		$loader = new Twig_Loader_Filesystem('view');
 		$this->twig = new Twig_Environment($loader, array(
+			'debug' => true,
 			//'cache'	=> 'cache'
 		));
+		$this->twig->addExtension(new Twig_Extension_Debug());
+
 		$this->model = $model;
 	}
 
@@ -19,38 +22,35 @@ class View extends Controller {
 			unset($_SESSION['alerts']);
 		}
 
-		// [TODO] is this needed?
-		if (!isset($this->pageTitle)) {
-			$this->pageTitle = "UNDEFINED";
-		}
-
 		$pagePerm = $this->model->user->getPagePerms($page);
 		$userLevel = $this->model->user->getUserLevel();
 
-		//echo "UserLevel: {$userLevel}";
-
 		if ($userLevel <= $pagePerm) {
 			echo $this->twig->render("$page.html", array(
+				'siteUrl' => $this->model->siteURL,
 				'siteName' => $this->model->siteName,
 				'page' => $page,
 				'alerts' => $this->model->endAlerts,
 				'stuff' => $stuff,
 				'userlevel' => $userLevel
 			));
+
+		} elseif ($this->model->user->userLoggedin) {
+			$this->model->setAlert("danger", "You do not have permission to access that page");
+			header("Location: {$this->model->siteURL}/");
 		} else {
-			echo $this->twig->render("login.html", array(
-				'siteName' => $this->model->siteName,
-				'page' => 'login',
-				'alerts' => $this->model->endAlerts,
-				'stuff' => $stuff,
-				'userlevel' => $userLevel
-			));
+			$this->model->setAlert("danger", "Please login to access that page");
+			$_SESSION["login_redirect"] = $_SERVER["REQUEST_URI"];
+
+			header("Location: {$this->model->siteURL}/login" . $_SERVER["REQUEST_URI"]);
 		}
 	}
 
 	// The view controller handles all CSRF stuff
 	// <input type="hidden" name="CSRFName" value="{{ stuff.CSRFName }}">
 	// <input type="hidden" name="CSRFToken" value="{{ stuff.CSRFToken }}">
+	// [TODO] if you refresh a form multiple times, multiplpe tokens will be stored in sessions
+	// 				need to clear them out..
 	function store_in_session($key,$value) {
 		if (!isset($_SESSION)) {
 			session_start();
@@ -80,7 +80,7 @@ class View extends Controller {
 		}
 	}
 
-	function csrf_validate_token($unique_form_name,$token_value) {
+	function csrf_validate_token($unique_form_name, $token_value) {
 		$token = $this->get_from_session($unique_form_name);
 		//echo "Token from session: '{$token}'";
 		//echo "<br>";
@@ -89,6 +89,7 @@ class View extends Controller {
 		if (!is_string($token_value)) {
 			return false;
 		}
+		// [todo] Check errors when token doesn't exist (f5 a form submit and tail logs)
 		$result = hash_equals($token, $token_value);
 		$this->unset_session($unique_form_name);
 		return $result;
@@ -100,6 +101,7 @@ class View extends Controller {
 		} elseif (function_exists('openssl_random_pseudo_bytes')) {
 			$token = openssl_random_pseudo_bytes(64); // openSSL
 		} else {
+			$this->model->setAlert("danger", "Cannot generate CSRF token. Requires function random_bytes() or openssl_random_pseudo_bytes()");
 			return false;
 		}
 

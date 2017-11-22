@@ -1,0 +1,45 @@
+{{ include('header.html') }}
+<div class="container">
+  <div class="row">
+    {{ include('admin-nav.html') }}
+    <div class="col-sm-9 col-md-10 pt-3">
+      <form class="form-horizontal" method="post" action="">
+        <input type="hidden" name="CSRFName" value="{{ stuff.CSRFName }}">
+        <input type="hidden" name="CSRFToken" value="{{ stuff.CSRFToken }}">
+
+        Edit user page!
+
+        <div class="form-group row justify-content-lg-center">
+          <div class="col col-lg-6">
+            <button type="submit" class="btn btn-secondary btn-block">Update User</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{{ include('footer.html') }}
+<script>
+var prices = {
+  {% for id, plan in stuff.plans %}
+  {{ id }}:{{ plan.price }},
+  {% endfor %}
+};
+
+
+$('#useSubPrice').on('click', function() {
+  if (typeof prices[$('#selectPlan').val()] == 'undefined') {
+    formPrice = '0.00';
+  } else {
+    formPrice = parseFloat(prices[$('#selectPlan').val()]/ 100).toFixed(2);
+  }
+
+  $('#inputPrice').val(formPrice);
+});
+
+$('#newFeature').on('click', function() {
+  console.log('adding new feature');
+});
+
+console.log(prices);
+</script>

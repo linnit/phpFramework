@@ -1,64 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<meta http-equiv="x-ua-compatible" content="ie=edge">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="shortcut icon" type="image/png" href="{{ siteUrl }}/favicon.png"/>
+    {% if stuff.vars.pagetitle != null %}
+    <title>{{ siteName }} - {{ stuff.vars.category }}</title>
+    {% else %}
+    <title>{{ siteName }}</title>
+    {% endif %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.1/css/bulma.min.css">
+    <style>
 
-	{% if stuff.vars.pagetitle != null %}
-	<title>{{ siteName }} - {{ stuff.vars.category }}</title>
-	{% else %}
-	<title>{{ siteName }}</title>
-	{% endif %}
+html {
+  height: 100%;
+  box-sizing: border-box;
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+
+body {
+  position: relative;
+  margin: 0;
+  padding-bottom: 6rem;
+  min-height: 100%;
+}
+
+.bd-anchor-title {
+    padding-top: 1.5rem;
+    position: relative;
+}
+
+/**
+ * Footer Styles [TODO] make better
+ */
+
+.footer {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 1rem;
+  background-color: #efefef;
+  text-align: center;
+}
+    </style>
+  </head>
+  <body>
+
+  <nav class="navbar is-primary" role="navigation" aria-label="main navigation">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="{{ siteUrl }}">Pot Bowling</a>
+      <!--<a class="navbar-item" href="{{ siteUrl }}"><img src="{{ siteUrl }}/isl.png" alt="" ></a>-->
+    </div>
 
 
 
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+    <div class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item {% if page == 'index' %}is-active{% endif %}" href="{{ siteUrl }}"><span class="icon"><i class="fa fa-home"></i></span>Home</a>
+        <a class="navbar-item {% if page == 'enterevent' %}is-active{% endif %}" href="{{ siteUrl }}/enterevent"><span class="icon"><i class="fa fa-calendar-check-o"></i></span>Enter an event</a>
+        <a class="navbar-item {% if page == 'winnerscircle' %}is-active{% endif %}" href="{{ siteUrl }}/winnerscircle"><span class="icon"><i class="fa fa-trophy"></i></span>Winners Circle</a>
+        {% if userlevel < 10 %}
+          {% if userlevel == 0 %}
+        <a class="navbar-item {% if 'admin' in page %}is-active{% endif %}" href="{{ siteUrl }}/admin"><span class="icon"><i class="fa fa-user-circle-o"></i></span>Admin</a>
+          {% endif %}
+        <a class="navbar-item {% if 'account' in page %}is-active{% endif %}" href="{{ siteUrl }}/account"><span class="icon"><i class="fa fa-user-circle"></i></span>Account</a>
+        {% else %}
+        <a class="navbar-item {% if page == 'login' %}is-active{% endif %}" href="{{ siteUrl }}/login"><span class="icon"><i class="fa fa-user"></i></span>Login/Register</a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
 
-	<link rel="stylesheet" href="/css/cover.css">
-</head>
-<body>
-	<div class="site-wrapper">
-		<div class="site-wrapper-inner">
-			<div class="cover-container">
-
-				<div class="masthead clearfix">
-					<div class="inner">
-						<h3 class="masthead-brand"><span class='tiny-green'>Tiny</span>Box </h3>
-						<nav class="nav nav-masthead">
-							{% if page == 'index' %}
-							<a class="nav-link active" href="/">Home</a>
-							{% else %}
-							<a class="nav-link" href="/">Home</a>
-							{% endif %}
-							{% if page == 'purchase' %}
-							<a class="nav-link active" href="/purchase">Purchase</a>
-							{% else %}
-							<a class="nav-link" href="/purchase">Purchase</a>
-							{% endif %}
-							{% if userlevel < 10 %}
-								{% if page == 'customer' %}
-								<a class="nav-link active" href="/customer">Customer Portal</a>
-								{% else %}
-								<a class="nav-link" href="/customer">Customer Portal</a>
-								{% endif %}
-								<a class="nav-link" href="/logout">Logout</a>
-							{% else %}
-								{% if page == 'login' %}
-								<a class="nav-link active" href="/login">Login</a>
-								{% else %}
-								<a class="nav-link" href="/login">Login</a>
-								{% endif %}
-							{% endif %}
-						</nav>
-					</div>
-				</div>
-
-				<div class="col-xs-12 col-sm-12 no-float" id="alerts">
-					{% for alert in alerts %}
-					<div class="alert alert-{{ alert.0|e }} alert-dismissible" role="alert">
-						<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-						{{ alert.1|raw }}
-					</div>
-					{% endfor %}
-				</div>
+{% if alerts|length >= 1 %}
+<section class="section">
+<div class="container">
+<div class="content">
+	{% for alert in alerts %}
+	<div class="notification is-{{ alert.0|e }}">
+		<button class="delete"></button>
+		{{ alert.1|raw }}
+	</div>
+	{% endfor %}
+</div>
+</div>
+</section>
+{% endif %}

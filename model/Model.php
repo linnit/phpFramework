@@ -1,14 +1,20 @@
 <?php
 
 require 'model/User.php';
-require 'model/Payment.php';
+require 'model/Post.php';
+require 'model/Table.php';
 
 Class Model {
 	var $endAlerts;
 
 	public function __construct() {
-		$dotenv = new Dotenv\Dotenv(dirname(dirname(__DIR__)));
-		$dotenv->load();
+		try {
+			$dotenv = new \Dotenv\Dotenv(dirname(dirname(__DIR__)));
+			$dotenv->load();
+		} catch(Exception $e) {
+			echo 'Error: ' .$e->getMessage();
+			throw new Exception("Error opening .env file");
+		}
 
 		$this->siteURL = $this->getSiteUrl();
 		$this->siteDomain = $this->getDomain();
@@ -19,12 +25,7 @@ Class Model {
 		$dbuser = getenv('DB_USER');
 		$dbpass = getenv('DB_PASS');
 
-		$this->stripeTestSecKey = getenv('STRIPE_TEST_SEC_KEY');
-		$this->stripeTestPubKey = getenv('STRIPE_TEST_PUB_KEY');
-		$this->stripeLiveSecKey = getenv('STRIPE_LIVE_SEC_KEY');
-		$this->stripeLivePubKey = getenv('STRIPE_LIVE_PUB_KEY');
-
-		$this->mail = new PHPMailer;
+		$this->mail = new \PHPMailer;
 		if (filter_var(getenv('SMTPDEBUG'), FILTER_VALIDATE_BOOLEAN)) $this->mail->SMTPDebug = 3;
 		$this->mail->isSMTP();
 		$this->mail->Host =		getenv('SMTPHOST');
@@ -35,14 +36,20 @@ Class Model {
 		$this->mail->Port =		getenv('SMTPPORT');
 
 		try {
-			$this->db = new PDO("mysql:host={$dbhost};dbname={$dbname}", $dbuser, $dbpass);
-			$this->db->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
+			$this->db = new \PDO("mysql:host={$dbhost};dbname={$dbname}", $dbuser, $dbpass);
+			$this->db->setAttribute( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
+
+			// https://stackoverflow.com/questions/10113562/pdo-mysql-use-pdoattr-emulate-prepares-or-not
+			$this->db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
 		} catch (PDOException $e) {
+			echo 'Error: ' .$e->getMessage();
 			throw new PDOException("Error connecting to database.");
 		}
 
 		$this->user = new User($this);
-		$this->payment = new Payment($this);
+		$this->post = new Post($this);
+
+		$this->checkTablesExist();
 
 		// danger, warning, success
 		$this->endAlerts = array();
@@ -55,6 +62,30 @@ Class Model {
 
 		if (!isset($_SESSION['alerts'])) $_SESSION['alerts'] = array();
 		array_push($_SESSION['alerts'], array($type, $alert));
+	}
+
+	/**
+	 * Check if the base tables in our database exists
+	 * If not, create them
+	 *
+	 *
+	 */
+	function checkTablesExist() {
+		$baseTables = array("login_attempts", "pages", "sessions", "user", "post", "saved", "category", "history");
+
+		foreach($baseTables as $table) {
+			try {
+				$stmt = $this->db->prepare("SELECT 1 FROM $table");
+				$stmt->execute();
+
+			} catch (PDOException $e) {
+				if (!isset($this->table)) {
+					$this->table = new Table($this);
+				}
+				$this->table->createTable($table);
+				$this->table->insertDefaultRows($table);
+			}
+		}
 	}
 
 	function getSiteUrl() {

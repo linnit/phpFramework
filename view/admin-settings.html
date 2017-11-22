@@ -1,0 +1,74 @@
+{{ include('header.html') }}
+<div class="container">
+  <div class="row">
+    {{ include('admin-nav.html') }}
+    <div class="col-sm-9 col-md-10 pt-3">
+
+
+      <div class="card">
+        <div class="card-block">
+          <h4 class="card-title">Site Icon</h4>
+          <p>
+            <img src="http://placehold.it/64x64" alt="..." class="rounded">
+
+            <label class="custom-file">
+              <input type="file" id="file" class="custom-file-input">
+              <span class="custom-file-control"></span>
+            </label>
+
+          </p>
+
+        </div>
+      </div>
+
+
+      <div class="card">
+        <div class="card-block">
+          <h4 class="card-title">CSS/JS from CDN</h4>
+          <p>
+            <h6 class="card-subtitle mb-2 text-muted">Bootstrap CSS</h6>
+            <div class="input-group">
+              <span class="input-group-addon">
+                <input type="checkbox" aria-label="Checkbox for following text input" checked>
+              </span>
+              <input type="text" class="form-control" aria-label="Text input with checkbox" value="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css">
+            </div>
+          </p>
+
+          <p>
+            <h6 class="card-subtitle mb-2 text-muted">Bootstrap JS</h6>
+            <div class="input-group">
+              <span class="input-group-addon">
+                <input type="checkbox" aria-label="Checkbox for following text input" checked>
+              </span>
+              <input type="text" class="form-control" aria-label="Text input with checkbox" value="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js">
+            </div>
+          </p>
+
+          <p>
+            <h6 class="card-subtitle mb-2 text-muted">jQuery</h6>
+            <div class="input-group">
+              <span class="input-group-addon">
+                <input type="checkbox" aria-label="Checkbox for following text input" checked>
+              </span>
+              <input type="text" class="form-control" aria-label="Text input with checkbox" value="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js">
+            </div>
+          </p>
+
+        </div>
+      </div>
+
+
+    </div>
+  </div>
+</div>
+
+
+<!--
+<div class="material-switch p-2 float-right">
+  <input id="someSwitchOptionPrimary" name="someSwitchOption001" type="checkbox"/>
+  <label for="someSwitchOptionPrimary" class="label-primary"></label>
+</div>
+-->
+
+{{ include('footer.html') }}

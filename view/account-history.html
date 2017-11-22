@@ -1,0 +1,26 @@
+{{ include('header.html') }}
+<section class="section">
+
+{{ include('account-nav.html') }}
+
+<div class="container">
+
+{% if stuff.posts|length < 1 %}
+You haven't veiwed any items yet.
+{% else %}
+<table class="table is-fullwidth">
+<tbody>
+{% for post in stuff.posts %}
+<tr>
+<td>{{ post.viewed }}</td>
+<td>{{ post.title }}</td>
+<td>{{ post.shortdescription }}</td>
+<td><a href="/learn/{{ post.url }}">View</a></td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+{% endif %}
+</div>
+</section>
+{{ include('footer.html') }}
