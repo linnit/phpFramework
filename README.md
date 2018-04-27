@@ -1,14 +1,14 @@
-# shitFramework
+# phpFramework
 
 ## Synopsis
 
-A shit framework I made using PHP.
+A php framework I made.
 
 ## Installation
 
 Clone the repository, create/import the database, create a database user and configure the `.env` file
 
-    git clone https://github.com/linnit/shitFramework .
+    git clone https://github.com/linnit/phpFramework .
     mysql frameworkdb < tbm.sql
     cp .env.example ../.env
     vim ../.env
