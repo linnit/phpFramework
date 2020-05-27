@@ -3,6 +3,6 @@
         "twig/twig": "~1.0",
         "vlucas/phpdotenv": "^2.0",
         "stripe/stripe-php": "^4.3",
-        "phpmailer/phpmailer": "^5.2"
+        "phpmailer/phpmailer": "^6.1"
     }
 }
